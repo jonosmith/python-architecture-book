@@ -1,11 +1,12 @@
 from datetime import date
+from typing import Tuple
 
 from model import Batch, OrderLine
 
 
 # Helpers
 
-def make_batch_and_line(sku, batch_qty, line_qty):
+def make_batch_and_line(sku: str, batch_qty: int, line_qty: int) -> Tuple[Batch, OrderLine]:
     return (
         Batch("batch-001", sku, batch_qty, eta=date.today()),
         OrderLine("order-123", sku, line_qty)

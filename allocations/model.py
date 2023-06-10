@@ -22,7 +22,7 @@ class Batch:
         self._purchased_quantity = qty
         self._allocations: Set[OrderLine] = set()
 
-    def __lt__(self, other: Self):
+    def __lt__(self, other: Self) -> bool:
         if self.eta is None:
             return True
         if other.eta is None:
@@ -31,7 +31,7 @@ class Batch:
         return self.eta < other.eta
 
     @property
-    def allocated_quantity(self):
+    def allocated_quantity(self) -> int:
         return sum(line.qty for line in self._allocations)
 
     @property
