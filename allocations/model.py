@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional, Set, List, Self
+from typing import Optional, Set, List, Self, Any
 
 
 class OutOfStock(Exception):
@@ -21,6 +21,11 @@ class Batch:
         self.eta = eta
         self._purchased_quantity = qty
         self._allocations: Set[OrderLine] = set()
+
+    def __eq__(self, other: Any):
+        if not isinstance(other, Batch):
+            return False
+        return other.reference == self.reference
 
     def __lt__(self, other: Self) -> bool:
         if self.eta is None:

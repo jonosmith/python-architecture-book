@@ -1,13 +1,17 @@
-from sqlalchemy import MetaData, Column, Table, Integer, String
+import logging
+
+from sqlalchemy import MetaData, Column, Table, Integer, String, Date, ForeignKey
 from sqlalchemy.ext.instrumentation import InstrumentationManager
-from sqlalchemy.orm import mapper
+from sqlalchemy.orm import mapper, relationship
 
 from allocations import model
 from allocations.model import OrderLine
 
+logger = logging.getLogger(__name__)
+
 metadata = MetaData()
 
-order_lines = Table(
+orderline_table = Table(
     "order_lines",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
@@ -16,9 +20,40 @@ order_lines = Table(
     Column("orderid", String(255)),
 )
 
+batch_table = Table(
+    "batches",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("reference", String(255)),
+    Column("sku", String(255)),
+    Column("_purchased_quantity", Integer),
+    Column("eta", Date)
+)
+
+allocations_table = Table(
+    "allocations",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("orderline_id", ForeignKey("order_lines.id")),
+    Column("batch_id", ForeignKey("batches.id"))
+)
+
 
 def start_mappers():
-    lines_mapper = mapper(model.OrderLine, order_lines)
+    logger.info("Starting mappers")
+
+    lines_mapper = mapper(model.OrderLine, orderline_table)
+    batches_mapper = mapper(
+        model.Batch,
+        batch_table,
+        properties={
+            "_allocations": relationship(
+                lines_mapper,
+                secondary=allocations_table,
+                collection_class=set
+            ),
+        }
+    )
 
 
 DEL_ATTR = object()
