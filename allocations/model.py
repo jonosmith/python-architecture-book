@@ -7,7 +7,7 @@ class OutOfStock(Exception):
     pass
 
 
-@dataclass(frozen=True)
+@dataclass(unsafe_hash=True)
 class OrderLine:
     orderid: str
     sku: str
@@ -34,6 +34,9 @@ class Batch:
             return False
 
         return self.eta < other.eta
+
+    def __hash__(self):
+        return hash(self.reference)
 
     @property
     def allocated_quantity(self) -> int:

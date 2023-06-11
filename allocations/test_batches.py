@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Tuple
 
-from model import Batch, OrderLine
+from allocations.model import Batch, OrderLine
 
 
 # Helpers
