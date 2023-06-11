@@ -8,7 +8,6 @@ from domain import model
 from service_layer import services
 
 orm.start_mappers()
-print(config.get_postgres_uri())
 get_session = sessionmaker(bind=create_engine(config.get_postgres_uri()))
 app = Flask(__name__)
 
@@ -21,14 +20,12 @@ def allocate_endpoint():
     if not request.json:
         return jsonify({"message": "Invalid format"}), 400
 
-    line = model.OrderLine(
-        request.json["orderid"],
-        request.json["sku"],
-        request.json["qty"]
-    )
+    orderid = request.json["orderid"]
+    sku = request.json["sku"]
+    qty = request.json["qty"]
 
     try:
-        batchref = services.allocate(line, repo, session)
+        batchref = services.allocate(orderid=orderid, sku=sku, qty=qty, repo=repo, session=session)
     except (model.OutOfStock, services.InvalidSku) as e:
         return jsonify({"message": str(e)}), 400
 
