@@ -3,7 +3,8 @@ from datetime import date, timedelta
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from allocations import model, repository
+from adapters import repository
+from domain import model
 
 
 def insert_order_line(session: Session) -> int:

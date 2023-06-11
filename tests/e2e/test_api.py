@@ -1,8 +1,8 @@
 import pytest
 import requests
 
-from allocations import config
-from allocations.random_refs import random_sku, random_batchref, random_orderid
+import config
+from tests.random_refs import random_sku, random_batchref, random_orderid
 
 
 @pytest.mark.usefixtures('restart_api')

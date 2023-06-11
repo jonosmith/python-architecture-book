@@ -2,7 +2,10 @@ from flask import Flask, jsonify, request
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from allocations import config, orm, repository, model, services
+import config
+from adapters import orm, repository
+from domain import model
+from service_layer import services
 
 orm.start_mappers()
 print(config.get_postgres_uri())

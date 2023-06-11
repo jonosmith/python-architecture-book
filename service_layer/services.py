@@ -1,5 +1,5 @@
-from allocations import model
-from allocations.repository import AbstractRepository
+from adapters.repository import AbstractRepository
+from domain import model
 
 
 class InvalidSku(Exception):
