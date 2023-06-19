@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import MetaData, Column, Table, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import mapper, relationship
 
-from domain import model
+from src.allocation.domain import model
 
 logger = logging.getLogger(__name__)
 

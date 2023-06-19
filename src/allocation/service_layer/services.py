@@ -1,8 +1,8 @@
 from datetime import date
 from typing import Optional
 
-from adapters.repository import AbstractRepository
-from domain import model
+from src.allocation.adapters.repository import AbstractRepository
+from src.allocation.domain import model
 
 
 class InvalidSku(Exception):

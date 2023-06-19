@@ -2,8 +2,8 @@ from datetime import date, timedelta
 
 import pytest
 
-from adapters import repository
-from service_layer import services
+from src.allocation.adapters import repository
+from src.allocation.service_layer import services
 
 today = date.today()
 tomorrow = date.today() + timedelta(days=1.0)

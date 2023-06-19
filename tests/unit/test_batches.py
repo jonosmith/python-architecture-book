@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Tuple
 
-from domain.model import Batch, OrderLine
+from src.allocation.domain.model import Batch, OrderLine
 
 
 # Helpers
