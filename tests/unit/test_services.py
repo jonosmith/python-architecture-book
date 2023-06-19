@@ -17,6 +17,9 @@ class FakeRepository(repository.AbstractRepository):
     def add(self, batch):
         self._batches.add(batch)
 
+    def delete(self, batch):
+        self._batches.remove(batch)
+
     def get(self, reference):
         return next(b for b in self._batches if b.reference == reference)
 
@@ -76,3 +79,14 @@ def test_add_batch():
 
     assert repo.get("b1") is not None
     assert session.committed
+
+
+def test_remove_batch():
+    repo, session = FakeRepository([]), FakeSession()
+    services.add_batch("b1", "CRUNCHY-ARMCHAIR", qty=100, eta=None, repo=repo, session=session)
+    assert repo.get("b1") is not None
+
+    services.delete_batch("b1", repo, session)
+
+    with pytest.raises(StopIteration):
+        repo.get("b1")

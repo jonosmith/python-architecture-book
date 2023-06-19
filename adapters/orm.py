@@ -48,7 +48,8 @@ def start_mappers():
             "_allocations": relationship(
                 lines_mapper,
                 secondary=allocations_table,
-                collection_class=set
+                collection_class=set,
+                cascade="all, delete",
             ),
         }
     )
