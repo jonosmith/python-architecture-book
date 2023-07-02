@@ -18,12 +18,18 @@ orderline_table = Table(
     Column("orderid", String(255)),
 )
 
+products_table = Table(
+    "products",
+    metadata,
+    Column("sku", String(255), primary_key=True),
+)
+
 batch_table = Table(
     "batches",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("reference", String(255)),
-    Column("sku", String(255)),
+    Column("sku", ForeignKey("products.sku")),
     Column("_purchased_quantity", Integer),
     Column("eta", Date)
 )
@@ -52,4 +58,7 @@ def start_mappers():
                 cascade="all, delete",
             ),
         }
+    )
+    mapper(
+        model.Product, products_table, properties={"batches": relationship(batches_mapper)}
     )

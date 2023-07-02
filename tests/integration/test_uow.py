@@ -7,7 +7,13 @@ from src.allocation.domain import model
 from src.allocation.service_layer import unit_of_work
 
 
+# Helpers
+
 def insert_batch(session: Session, ref: str, sku: str, qty: int, eta: datetime.datetime | None):
+    session.execute(
+        "INSERT INTO products (sku) VALUES (:sku)",
+        dict(sku=sku)
+    )
     session.execute(
         "INSERT INTO batches (reference, sku, _purchased_quantity, eta)"
         " VALUES (:ref, :sku, :qty, :eta)",
@@ -28,6 +34,8 @@ def get_allocated_batch_ref(session: Session, orderid: str, sku: str) -> str:
     return batchref
 
 
+# Tests
+
 def test_uow_can_retrieve_a_batch_and_allocate_to_it(session_factory):
     session = session_factory()
     insert_batch(session, "batch1", "HIPSTER-WORKBENCH", 100, None)
@@ -35,9 +43,11 @@ def test_uow_can_retrieve_a_batch_and_allocate_to_it(session_factory):
 
     uow = unit_of_work.SqlAlchemyUnitOfWork(session_factory)
     with uow:
-        batch = uow.batches.get(reference="batch1")
+        retrieved_product = uow.products.get(sku="HIPSTER-WORKBENCH")
+        assert retrieved_product is not None
+
         line = model.OrderLine("o1", "HIPSTER-WORKBENCH", 10)
-        batch.allocate(line)
+        retrieved_product.allocate(line)
         uow.commit()
 
     batchref = get_allocated_batch_ref(session, "o1", "HIPSTER-WORKBENCH")

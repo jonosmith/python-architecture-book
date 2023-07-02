@@ -5,36 +5,36 @@ from sqlalchemy.orm import Session
 from src.allocation.domain import model
 
 
-class AbstractRepository(abc.ABC):
+class AbstractProductRepository(abc.ABC):
     @abc.abstractmethod
-    def add(self, batch: model.Batch) -> None:
+    def add(self, product: model.Product) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def delete(self, batch: model.Batch) -> None:
+    def delete(self, product: model.Product) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get(self, reference: str) -> model.Batch:
+    def get(self, sku: str) -> model.Product | None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def list(self) -> list[model.Batch]:
+    def list(self) -> list[model.Product]:
         raise NotImplementedError
 
 
-class SqlAlchemyRepository(AbstractRepository):
+class SqlAlchemyRepository(AbstractProductRepository):
     def __init__(self, session: Session):
         self.session = session
 
-    def add(self, batch: model.Batch):
-        self.session.add(batch)
+    def add(self, product: model.Product):
+        self.session.add(product)
 
-    def delete(self, batch: model.Batch):
-        self.session.delete(batch)
+    def delete(self, product: model.Product):
+        self.session.delete(product)
 
-    def get(self, reference: str) -> model.Batch:
-        return self.session.query(model.Batch).filter_by(reference=reference).one()
+    def get(self, sku: str) -> model.Product | None:
+        return self.session.query(model.Product).filter_by(sku=sku).first()
 
-    def list(self) -> list[model.Batch]:
-        return self.session.query(model.Batch).all()
+    def list(self) -> list[model.Product]:
+        return self.session.query(model.Product).all()

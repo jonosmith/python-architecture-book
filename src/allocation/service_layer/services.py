@@ -19,30 +19,50 @@ def is_valid_sku(sku: str, batches: list[model.Batch]):
 
 def add_batch(ref: str, sku: str, qty: int, eta: Optional[date], uow: unit_of_work.AbstractUnitOfWork) -> None:
     with uow:
-        uow.batches.add(model.Batch(ref, sku, qty, eta))
+        product = uow.products.get(sku=sku)
+        if product is None:
+            product = model.Product(sku, batches=[])
+            uow.products.add(product)
+
+        product.batches.append(model.Batch(ref=ref, sku=sku, qty=qty, eta=eta))
+
         uow.commit()
 
 
-def delete_batch(ref: str, uow: unit_of_work.AbstractUnitOfWork) -> None:
-    with uow:
-        batch = uow.batches.get(ref)
+def delete_batch(ref: str, sku: str, uow: unit_of_work.AbstractUnitOfWork) -> None:
+    """
+    :raises InvalidSku
+    :raises BatchNotFound
+    """
 
-        if not batch:
+    with uow:
+        product = uow.products.get(sku=sku)
+        if product is None:
+            raise InvalidSku(f"Invalid sku {sku}")
+
+        try:
+            next(b for b in product.batches if b.reference == ref)
+        except StopIteration:
             raise BatchNotFound(f"Batch {ref} not found")
 
-        uow.batches.delete(batch)
+        product.batches = [b for b in product.batches if b.reference is not ref]
 
         uow.commit()
 
 
 def allocate(orderid: str, sku: str, qty: int, uow: unit_of_work.AbstractUnitOfWork) -> str:
-    with uow:
-        batches = uow.batches.list()
+    """
+    :raises InvalidSku
+    """
 
-        if not is_valid_sku(sku, batches):
+    line = model.OrderLine(orderid, sku, qty)
+    with uow:
+        product = uow.products.get(sku=line.sku)
+
+        if product is None:
             raise InvalidSku(f"Invalid sku {sku}")
 
-        batchref = model.allocate(model.OrderLine(orderid, sku, qty), batches)
+        batchref = product.allocate(line)
         uow.commit()
 
-        return batchref
+    return batchref

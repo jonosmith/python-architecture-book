@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional, Set, List, Self, Any
+from typing import Optional, Set, Self, Any
 
 
 class OutOfStock(Exception):
@@ -60,12 +60,17 @@ class Batch:
             self._allocations.remove(line)
 
 
-def allocate(line: OrderLine, batches: List[Batch]) -> str:
-    try:
-        batch = next(
-            b for b in sorted(batches) if b.can_allocate(line)
-        )
-        batch.allocate(line)
-        return batch.reference
-    except StopIteration:
-        raise OutOfStock(f"Out of stock for sku {line.sku}")
+class Product:
+    def __init__(self, sku: str, batches: list[Batch]):
+        self.sku = sku
+        self.batches = batches
+
+    def allocate(self, line: OrderLine) -> str:
+        try:
+            batch = next(
+                b for b in sorted(self.batches) if b.can_allocate(line)
+            )
+            batch.allocate(line)
+            return batch.reference
+        except StopIteration:
+            raise OutOfStock(f"Out of stock for sku {line.sku}")

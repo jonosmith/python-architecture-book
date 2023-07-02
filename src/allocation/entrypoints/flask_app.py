@@ -25,7 +25,12 @@ def allocate_endpoint():
     qty = request.json["qty"]
 
     try:
-        batchref = services.allocate(orderid=orderid, sku=sku, qty=qty, uow=unit_of_work.SqlAlchemyUnitOfWork())
+        batchref = services.allocate(
+            orderid=orderid,
+            sku=sku,
+            qty=qty,
+            uow=unit_of_work.SqlAlchemyUnitOfWork()
+        )
     except (model.OutOfStock, services.InvalidSku) as e:
         return jsonify({"message": str(e)}), HTTPStatus.BAD_REQUEST
 
@@ -45,15 +50,25 @@ def add_batch():
     if input_eta is not None:
         eta = datetime.fromisoformat(input_eta).date()
 
-    services.add_batch(ref=ref, sku=sku, qty=qty, eta=eta, uow=unit_of_work.SqlAlchemyUnitOfWork())
+    services.add_batch(
+        ref=ref,
+        sku=sku,
+        qty=qty,
+        eta=eta,
+        uow=unit_of_work.SqlAlchemyUnitOfWork()
+    )
 
     return 'OK', HTTPStatus.CREATED
 
 
-@app.route("/batches/<ref>", methods=["DELETE"])
-def delete_batch(ref: str):
+@app.route("/products/<sku>/batches/<ref>", methods=["DELETE"])
+def delete_batch(sku: str, ref: str):
     try:
-        services.delete_batch(ref=ref, uow=unit_of_work.SqlAlchemyUnitOfWork())
+        services.delete_batch(
+            ref=ref,
+            sku=sku,
+            uow=unit_of_work.SqlAlchemyUnitOfWork()
+        )
     except services.BatchNotFound:
         return jsonify({"message": f"Batch {ref} not found"}), HTTPStatus.BAD_REQUEST
 

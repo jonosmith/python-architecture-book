@@ -21,6 +21,12 @@ def insert_order_line(session: Session) -> int:
     return orderline_id
 
 
+def insert_product(session: Session):
+    session.execute(
+        'INSERT INTO products (sku) VALUES ("GENERIC-SOFA")'
+    )
+
+
 def insert_batch(session: Session, ref: str) -> int:
     tomorrow = date.today() + timedelta(days=1.0)
 
@@ -39,11 +45,12 @@ def insert_allocation(session: Session, orderline_id, batch_id) -> None:
     )
 
 
-def test_repository_can_save_a_batch(session: Session):
+def test_repository_can_save_a_product(session: Session):
     batch = model.Batch("batch1", "RUSTY-SOAPDISH", 100, eta=None)
+    product = model.Product(sku="RUSTY-SOAPDISH", batches=[batch])
 
     repo = repository.SqlAlchemyRepository(session)
-    repo.add(batch)
+    repo.add(product)
     session.commit()
 
     rows = list(session.execute(text("SELECT reference, sku, _purchased_quantity, eta FROM batches")))
@@ -53,16 +60,19 @@ def test_repository_can_save_a_batch(session: Session):
 def test_repository_can_retrieve_a_batch_with_allocations(session: Session):
     orderline_id = insert_order_line(session)
     batch1_id = insert_batch(session, "batch1")
+    insert_product(session)
     insert_batch(session, "batch2")
     insert_allocation(session, orderline_id, batch1_id)
 
     repo = repository.SqlAlchemyRepository(session)
-    retrieved = repo.get("batch1")
+    retrieved_product = repo.get("batch1")
 
-    expected = model.Batch("batch1", "GENERIC-SOFA", 100, eta=None)
-    assert retrieved == expected
-    assert retrieved.sku == expected.sku
-    assert retrieved._purchased_quantity == expected._purchased_quantity
-    assert retrieved._allocations == {
+    expected_product = model.Product("GENERIC-SOFA", [
+        model.Batch("batch1", "GENERIC-SOFA", 100, eta=None)
+    ])
+    assert retrieved_product == expected_product
+    assert retrieved_product.sku == expected_product.sku
+    assert retrieved_product.batches[0]._purchased_quantity == expected_product.batches[0]._purchased_quantity
+    assert retrieved_product.batches[0]._allocations == {
         model.OrderLine("order1", "GENERIC-SOFA", 12)
     }

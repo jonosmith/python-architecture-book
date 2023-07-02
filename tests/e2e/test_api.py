@@ -16,9 +16,9 @@ def api_add_batch(ref: str, sku: str, qty: int, eta: str | None):
     assert r.status_code == HTTPStatus.CREATED
 
 
-def api_delete_batch(ref: str):
+def api_delete_batch(ref: str, sku: str):
     url = config.get_api_url()
-    r = requests.delete(f"{url}/batches/{ref}")
+    r = requests.delete(f"{url}/products/{sku}/batches/{ref}")
     assert r.status_code == HTTPStatus.OK
 
 
@@ -42,9 +42,9 @@ def test_happy_path_returns_201_and_allocated_batch():
     r = requests.post(f"{url}/allocate", json=data)
 
     # Cleanup
-    api_delete_batch(earlybatch)
-    api_delete_batch(laterbatch)
-    api_delete_batch(otherbatch)
+    api_delete_batch(earlybatch, sku)
+    api_delete_batch(laterbatch, sku)
+    api_delete_batch(otherbatch, sku)
 
     # Assert
     assert r.status_code == HTTPStatus.CREATED
