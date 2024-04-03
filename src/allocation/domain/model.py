@@ -61,9 +61,21 @@ class Batch:
 
 
 class Product:
+    """
+    Aggregate root
+    """
+
     def __init__(self, sku: str, batches: list[Batch]):
         self.sku = sku
         self.batches = batches
+
+    def __eq__(self, other: Any):
+        if not isinstance(other, Product):
+            return False
+        return other.sku == self.sku
+
+    def __hash__(self):
+        return hash(self.sku)
 
     def allocate(self, line: OrderLine) -> str:
         try:
