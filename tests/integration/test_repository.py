@@ -57,21 +57,22 @@ def test_repository_can_save_a_product(session: Session):
     assert rows == [("batch1", "RUSTY-SOAPDISH", 100, None)]
 
 
-def test_repository_can_retrieve_a_batch_with_allocations(session: Session):
+def test_repository_can_retrieve_a_product_with_batches_and_allocations(session: Session):
     orderline_id = insert_order_line(session)
     batch1_id = insert_batch(session, "batch1")
     insert_product(session)
     insert_batch(session, "batch2")
     insert_allocation(session, orderline_id, batch1_id)
-
     repo = repository.SqlAlchemyRepository(session)
-    retrieved_product = repo.get("batch1")
+
+    retrieved_product = repo.get("GENERIC-SOFA")
 
     expected_product = model.Product("GENERIC-SOFA", [
         model.Batch("batch1", "GENERIC-SOFA", 100, eta=None)
     ])
+    expected_product.allocate(model.OrderLine(orderid="order1", sku="GENERIC-SOFA", qty=12))
+
     assert retrieved_product == expected_product
-    assert retrieved_product.sku == expected_product.sku
     assert retrieved_product.batches[0]._purchased_quantity == expected_product.batches[0]._purchased_quantity
     assert retrieved_product.batches[0]._allocations == {
         model.OrderLine("order1", "GENERIC-SOFA", 12)

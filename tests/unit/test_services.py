@@ -21,8 +21,11 @@ class FakeRepository(repository.AbstractProductRepository):
     def delete(self, product: model.Product) -> None:
         self._products.remove(product)
 
-    def get(self, sku: str) -> model.Product:
-        return next(p for p in self._products if p.sku == sku)
+    def get(self, sku: str) -> model.Product | None:
+        try:
+            return next(p for p in self._products if p.sku == sku)
+        except StopIteration:
+            return None
 
     def list(self) -> list[model.Product]:
         return list(self._products)
@@ -57,7 +60,7 @@ def test_add_batch_for_new_product():
 
     services.add_batch("b1", "CRUNCHY-ARMCHAIR", qty=100, eta=None, uow=uow)
 
-    assert uow.products.get("CRUNCY-ARMCHAIR") is not None
+    assert uow.products.get("CRUNCHY-ARMCHAIR") is not None
     assert uow.committed
 
 
@@ -88,8 +91,8 @@ def test_remove_batch():
 
     services.delete_batch(ref="b1", sku="CRUNCHY-ARMCHAIR", uow=uow)
 
-    with pytest.raises(StopIteration):
-        uow.products.get("CRUNCHY-ARMCHAIR")
+    retrieved_product = uow.products.get("CRUNCHY-ARMCHAIR")
+    assert retrieved_product.batches == []
 
 
 def test_allocate_errors_for_invalid_sku():

@@ -44,7 +44,7 @@ def test_happy_path_returns_201_and_allocated_batch():
     # Cleanup
     api_delete_batch(earlybatch, sku)
     api_delete_batch(laterbatch, sku)
-    api_delete_batch(otherbatch, sku)
+    api_delete_batch(otherbatch, other_sku)
 
     # Assert
     assert r.status_code == HTTPStatus.CREATED
